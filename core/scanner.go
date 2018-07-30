@@ -112,7 +112,7 @@ func (s *splitter) init(src []byte) {
 }
 
 
-func (s *splitter) Split() (nodes []*Node) {
+func (s *splitter) split() (nodes []*Node) {
 
 	var sentense []rune
 	var n Node

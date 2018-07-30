@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"io/ioutil"
 	_"unicode/utf8"
+	"strings"
 )
 
 type Sentense struct {
@@ -28,23 +29,36 @@ func LoadTextFromPath(p string) (text []byte) {
 	}
 }
 
-func RuleEvenSymbol(s Sentense)  {
-	fwDash := '—'
-	tpLeader := '…'
-	symbolPositions := []Position{}
-}
-func RuleMaxSymbol(s Sentense, symbol rune, max int) (over bool, count int) {
-
-
-	return over, count
+func Split(data []byte) []*Node {
+	s := splitter{}
+	s.init(data)
+	nodes := s.split()
+	return nodes
 }
 
-func RuleLongKanjiChain(s Sentense, max int) (over bool) {
+func SkipSentences(ns []*Node, cs string) []*Node {
+	var nns []*Node
+	var inSkip bool
 
-	over = false
+	inSkip = false
 
-	return over
+	for _, n := range ns {
+		if strings.HasPrefix(n.Data, cs) {
+			if !inSkip {
+				if strings.Contains(n.Data, "STARTSKIP") {
+					inSkip = true
+				} else {
+					nns = append(nns, n)
+				}
+
+			} else {
+				if strings.Contains(n.Data, "ENDSKIP") {
+					inSkip = false
+				}
+			}
+		} else {
+			nns = append(nns, n)
+		}
+	}
+	return nns
 }
-
-
-

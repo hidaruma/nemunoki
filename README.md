@@ -12,6 +12,17 @@ $ nemunoki <inputfile>
 
 ### Basic Usage
 
+#### Skip Lines
+In Your Text, Add comment contains `STARTSKIP` before you want skip lines, and add comment contains `ENDSKIP` after skip lines.
+
+##### LaTeX
+```latex
+% STARTSKIP
+something skip sentenses...
+% ENDSKIP
+
+```
+
 ### Server Mode
 
 ## Limitation
