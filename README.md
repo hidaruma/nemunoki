@@ -1,8 +1,14 @@
 # Nemunoki[WIP]
 
-Yet another edit japanese support tool. Inspired by Tomarigi.
+Japanese proofreading auxiliary tool. Inspired by Tomarigi and RedPen.
 
 ## Usage
+
+```sh
+
+$ nemunoki <inputfile>
+
+```
 
 ### Basic Usage
 
