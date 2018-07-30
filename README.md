@@ -6,7 +6,7 @@ Japanese proofreading auxiliary tool. Inspired by Tomarigi and RedPen.
 
 ```sh
 
-$ nemunoki <inputfile>
+$ nemunoki -file <inputfile>
 
 ```
 

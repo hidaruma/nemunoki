@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	_"unicode/utf8"
 	"strings"
+	"unicode/utf8"
 )
 
 type Sentense struct {
@@ -27,13 +28,19 @@ func LoadTextFromPath(p string) (text []byte) {
 		fmt.Println("can't open the file")
 		os.Exit(1)
 	}
+	return text
 }
 
-func Split(data []byte) []*Node {
+func Split(data []byte) *[]Node {
 	s := splitter{}
 	s.init(data)
 	nodes := s.split()
 	return nodes
+}
+
+func CountCharacters(s *Node) int {
+	c := utf8.RuneCount([]byte(s.Data))
+	return c
 }
 
 func SkipSentences(ns []*Node, cs string) []*Node {
