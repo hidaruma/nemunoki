@@ -5,7 +5,7 @@ import (
 	"unicode/utf8"
 	"bytes"
 	"os"
-)
+	)
 
 type Position struct {
 	Offset int
@@ -70,16 +70,20 @@ func (s *splitter) error(o int, msg string) {
 	os.Exit(1)
 }
 
-func (s *splitter) currentOffset() int {
-	return s.offset
+func (s splitter) currentOffset() int {
+	i := s.offset
+	return i
 }
 
-func (s *splitter) currentLine() int {
-	return s.lineOffset
+func (s splitter) currentLine() int {
+
+	i:= s.lineOffset
+	return i
 }
 
-func (s *splitter) currentColumn() int {
-	return s.columnOffset
+func (s splitter) currentColumn() int {
+	i := s.columnOffset
+	return i
 }
 
 const bom = 0xFEFF
@@ -91,7 +95,10 @@ func (s *splitter) next() (size int){
 		if s.ch == '\n' {
 			s.lineOffset++
 			s.columnOffset = 0
+		} else {
+			s.columnOffset++
 		}
+
 		r, size, err := s.src.ReadRune()
 		if err != nil {
 			s.error(s.offset, "ReadRune Error")
@@ -107,7 +114,7 @@ func (s *splitter) next() (size int){
 			}
 		}
 		s.rdOffset += size
-		s.columnOffset++
+
 		s.ch = r
 	} else {
 		//s.rdOffset = s.size
@@ -120,16 +127,16 @@ func (s *splitter) next() (size int){
 	return size
 }
 
-func (s *splitter) init(src []byte) {
+func (s *splitter) init(src []byte, o int, l int, c int) {
 	s.src = bytes.NewReader(src)
 	s.size = len(src)
 	s.totalLines = bytes.Count(src, []byte{'\n'})
 
 	s.ch = 0
-	s.offset = 0
-	s.rdOffset = 0
-	s.lineOffset = 1
-	s.columnOffset = 1
+	s.offset = o
+	s.rdOffset = o
+	s.lineOffset = l
+	s.columnOffset = c
 }
 
 
@@ -140,6 +147,9 @@ func (s *splitter) split() (*[]Node) {
 	max := s.size
 	eos := true //ch is End of Sentence or not.
 	for i := 0; i < max; {
+		if len(nodes) >= s.totalLines {
+			nodes = append(nodes, Node{})
+		}
 		var o, l, c int
 		ch := s.ch
 		s.next()
@@ -147,8 +157,10 @@ func (s *splitter) split() (*[]Node) {
 			o = s.currentOffset()
 			l = s.currentLine()
 			c = s.currentColumn()
+			fmt.Println(o,l,c)
+
 			nodes[i].set(o, l, c)
-			eos =false
+			eos = false
 		}
 
 		switch {
@@ -162,21 +174,28 @@ func (s *splitter) split() (*[]Node) {
 
 				nodes[i].Data = string(sentence)
 				sentence = []rune{}
+				ch = s.ch
+				s.next()
 				eos = true
 				i++
-
-			} else {
 				continue
 			}
+			fallthrough
+
 		case isDelimNoSpace(ch):
 			sentence = append(sentence,ch)
+			if isFollower(s.ch) {
+				ch = s.ch
+				s.next()
+				sentence = append(sentence, ch)
+			}
 			nodes[i].Data = string(sentence)
 			sentence = []rune{}
 			eos = true
 			i++
 
 		case isDelimNeedSpace(ch):
-			if s.ch == ' ' || s.ch == '\n' {
+			if s.ch == ' ' || s.ch == '\n' || isFollower(ch) {
 				sentence = append(sentence, ch)
 				nodes[i].Data = string(sentence)
 				sentence = []rune{}
@@ -186,7 +205,16 @@ func (s *splitter) split() (*[]Node) {
 			fallthrough
 
 		case isDelimNeedWideSpace(ch):
-			if s.ch == '　' || s.ch == '\n' || isFollower(s.ch) {
+			if s.ch == '　' {
+				sentence = append(sentence, ch)
+				ch = s.ch
+				s.next()
+				sentence = append(sentence, ch)
+				nodes[i].Data = string(sentence)
+				sentence = []rune{}
+				eos = true
+				i++
+			}  else if s.ch == '\n' {
 				sentence = append(sentence, ch)
 				nodes[i].Data = string(sentence)
 				sentence = []rune{}
@@ -198,15 +226,27 @@ func (s *splitter) split() (*[]Node) {
 
 		case isFollower(ch):
 
-/*			if s.ch == '\n' || unicode.IsSpace(s.ch) {
+			if  s.ch == ' ' || s.ch == '　' {
 				sentence = append(sentence, ch)
+				ch = s.ch
+				sentence = append(sentence, ch)
+				s.next()
 				nodes[i].Data = string(sentence)
 				sentence = []rune{}
 				eos = true
 				i++
+			} else if s.ch == '\n' {
+				sentence = append(sentence, ch)
+				nodes[i].Data = string(sentence)
+				sentence = []rune{}
+				sentence = append(sentence, 's', 'u', 'c', 'k')
+				s.next()
+				eos = true
+				i++
 			}
 			fallthrough
-*/
+
+
 		default:
 			if ch != 0 || ch != '\n' || ch != '　' {
 				sentence = append(sentence, ch)

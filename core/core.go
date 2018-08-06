@@ -10,7 +10,7 @@ import (
 	_"unicode/utf8"
 	"strings"
 	"unicode/utf8"
-)
+	)
 
 type Sentense struct {
 	LineStart int
@@ -31,11 +31,22 @@ func LoadTextFromPath(p string) (text []byte) {
 	return text
 }
 
-func Split(data []byte) *[]Node {
+func Split(data []byte, o int, l int, c int) []Node {
 	s := splitter{}
-	s.init(data)
+	s.init(data, o, l, c)
+	fmt.Println(s.totalLines, s.size)
 	nodes := s.split()
-	return nodes
+	cnt := 0
+	res := *nodes
+	for _, n := range res {
+		if n.Pos.Line == 0 && n.Pos.Column == 0 {
+			break
+		}
+		cnt++
+	}
+	r := res[:cnt]
+
+	return r
 }
 
 func CountCharacters(s *Node) int {
